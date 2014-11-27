@@ -43,6 +43,7 @@ public class MainActivity extends BaseActivity {
 	private long returnKeyPressed = 0;
 	private RequestQueue mQueue;
 	private Client client;
+	private Map<String, News> newsCache;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,7 @@ public class MainActivity extends BaseActivity {
 		
 		mQueue = Volley.newRequestQueue(this);
 		client = clientFactory.getClient("cnbeta");
+		newsCache = new HashMap<String, News>();
 		
 		//设置ActionBar的图标可点击
 		getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -60,11 +62,9 @@ public class MainActivity extends BaseActivity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				TextView newsId =(TextView) view.findViewById(R.id.main_list_id);
-				TextView newsTitle =(TextView) view.findViewById(R.id.main_list_title);
-				News news = new News();
-				news.setId((String) newsId.getText());
-				news.setTitle((String) newsTitle.getText());
+				TextView newsIdView =(TextView) view.findViewById(R.id.main_list_id);
+				String newsId = (String) newsIdView.getText();
+				News news = newsCache.get(newsId);
 				
 				Intent intent = new Intent(view.getContext(), NewsActivity.class);
 				intent.putExtra("news", news);
@@ -244,6 +244,9 @@ public class MainActivity extends BaseActivity {
 
 	            		List<Map<String,String>> resultList = new ArrayList<Map<String,String>>();
 	            		for (News news : newsList) {
+	            			if(!newsCache.containsKey(news.getId())){
+	            				newsCache.put(news.getId(), news);
+	            			}
 	            			Map<String,String> map = new HashMap<String,String>();
 	            			map.put("id", news.getId());
 	            			map.put("title", news.getTitle());
