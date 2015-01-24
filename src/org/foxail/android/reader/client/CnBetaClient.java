@@ -86,11 +86,11 @@ public class CnBetaClient extends Client {
 		
 		//内容
 		pattern = Pattern.compile(
-				"<div class=\"content\"><p.+?>.+?</p></div>", 
+				"(<div class=\"content\"><p.+?>.+?</div>)\\s+<a", 
 				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(responseStr);
 		if (matcher.find()) {
-			sb.append(matcher.group(0));
+			sb.append(matcher.group(1));
 		}
 		
 		String html = sb.toString();
