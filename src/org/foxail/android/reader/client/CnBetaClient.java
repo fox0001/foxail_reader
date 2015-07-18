@@ -86,7 +86,7 @@ public class CnBetaClient extends Client {
 		
 		//内容
 		pattern = Pattern.compile(
-				"(<div class=\"content\"><p.+?>.+?</div>)\\s+<a", 
+			"(<div class=\"content\">.+?</div>)\\s+<a href=\"/wap/hotcomments\\.htm", 
 				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(responseStr);
 		if (matcher.find()) {
