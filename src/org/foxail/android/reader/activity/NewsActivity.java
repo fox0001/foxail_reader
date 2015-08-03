@@ -18,6 +18,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
+import android.content.res.*;
 
 @SuppressLint("NewApi")
 public class NewsActivity extends BaseActivity {
@@ -28,6 +29,8 @@ public class NewsActivity extends BaseActivity {
 	private WebView newsWeb;
 	private RequestQueue mQueue;
 	private Client client;
+	
+	private String defaultCss;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +48,12 @@ public class NewsActivity extends BaseActivity {
 		newsWeb.getSettings().setSupportZoom(true);
 		newsWeb.getSettings().setBuiltInZoomControls(true);
 		newsWeb.getSettings().setDisplayZoomControls(false);
+		
+		//Setting default background color
+		newsWeb.setBackgroundColor(R.color.primary_dark);
+		
+		newsWeb.setLeft(5);
+		newsWeb.setRight(5);
 		
 		Intent intent = getIntent();
 		Bundle newsBundle = intent.getExtras();
@@ -84,6 +93,17 @@ public class NewsActivity extends BaseActivity {
 	    return true;
     }
 	
+	// Get default CSS
+	private String getDefaultCss(){
+		if(defaultCss == null){
+			int fontColor = getResources().getColor(R.color.accent);
+			defaultCss = "<style>* {color:" 
+				+ String.format("#%06X", 0xFFFFFF & fontColor)
+				+ ";}</style>";
+		}
+		return defaultCss;
+	}
+	
 	private void showNewsContent(News news) {
 		if (BuildConfig.DEBUG) {
 			Log.d(TAG, "get news content starting. news.id=" + news.getId());
@@ -101,8 +121,8 @@ public class NewsActivity extends BaseActivity {
 	                public void onResponse(String response) {  
 	                    //Log.d("TAG", response);
 	            		
-	                	String html = client.getNewsContent(response);
-	        			
+						String html = getDefaultCss() + client.getNewsContent(response);
+						
 	        			//显示处理后的新闻内容
 	        			newsWeb.loadDataWithBaseURL("about:blank", 
 	        					html, "text/html", "utf-8", null);
