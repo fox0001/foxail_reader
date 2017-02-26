@@ -3,4 +3,5 @@
 	<item name="accent" type="color">#CCCCCC</item>
     <item name="primary" type="color">#808080</item>
     <item name="primary_dark" type="color">#606060</item>
+	<item name="background" type="color">#303030</item>
 </resources>
