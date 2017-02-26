@@ -50,7 +50,8 @@ public class NewsActivity extends BaseActivity {
 		newsWeb.getSettings().setDisplayZoomControls(false);
 		
 		//Setting default background color
-		newsWeb.setBackgroundColor(R.color.primary_dark);
+		int colorPprimaryDark = getResources().getColor(R.color.background);
+		newsWeb.setBackgroundColor(colorPprimaryDark);
 		
 		newsWeb.setLeft(5);
 		newsWeb.setRight(5);
