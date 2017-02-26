@@ -20,18 +20,20 @@ import org.foxail.android.reader.BuildConfig;
 import org.foxail.android.reader.model.News;
 
 import android.util.Log;
+import com.android.volley.toolbox.*;
+import org.json.*;
 
 public class CnBetaClient extends Client {
 
 	@Override
 	public String getListUrl(int pageNum) {
-		String url = "http://m.cnbeta.com/wap/index.htm?page=" + pageNum;
+		String url = "http://m.cnbeta.com/touch/default/timeline.json?page=" + pageNum;
 		return url;
 	}
 
 	@Override
 	public String getContentUrl(String id) {
-		String url = "http://m.cnbeta.com/wap/view_" + id + ".htm";
+		String url = "http://m.cnbeta.com/wap/view/" + id + ".htm";
 		return url;
 	}
 
@@ -44,20 +46,28 @@ public class CnBetaClient extends Client {
 	@Override
 	public List<News> getNewsList(String responseStr) {
 		List<News> newsList = new ArrayList<News>();
-        
-        Pattern pattern = Pattern.compile(
-				"<div class=\"list\"><a href=\"/wap/view_(\\d+).htm\">([^<]+)</a></div>", 
-				Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(responseStr);
-        while(matcher.find()) {
-    		News news = new News();
-    		news.setId(matcher.group(1));
-    		news.setTitle(matcher.group(2));
-    		news.setContentUrl(this.getContentUrl(news.getId()));
-    		news.setShareUrl(this.getShareUrl(news.getId()));
-    		news.setReceiveDate(new Date(System.currentTimeMillis()));
-    		newsList.add(news);
-        }
+		if(responseStr == null || responseStr.isEmpty()) {
+			return newsList;
+		}
+		
+		try{
+			JSONObject json = new JSONObject(responseStr);
+			JSONArray list = json.getJSONObject("result").getJSONArray("list");
+			JSONObject item = null;
+			News news = null;
+			for(int i = 0; i < list.length(); i++){
+				item = list.getJSONObject(i);
+				news = new News();
+				news.setId(item.getString("sid"));
+				news.setTitle(item.getString("title"));
+				news.setContentUrl(this.getContentUrl(news.getId()));
+				news.setShareUrl(this.getShareUrl(news.getId()));
+				news.setReceiveDate(new Date(System.currentTimeMillis()));
+				newsList.add(news);
+			}
+		} catch(Exception e){
+			// do nothiong
+		}
 		
 		return newsList;
 	}
@@ -86,7 +96,7 @@ public class CnBetaClient extends Client {
 		
 		//内容
 		pattern = Pattern.compile(
-			"(<div class=\"content\">.+?</div>)\\s+<a href=\"/wap/hotcomments\\.htm", 
+			"(<div class=\"content\">.+?</div>)\\s+<div style=\"text-align:center;margin:0 0 15px 0\">", 
 				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(responseStr);
 		if (matcher.find()) {
