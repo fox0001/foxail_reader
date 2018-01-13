@@ -95,13 +95,17 @@ public class CnBetaClient extends Client {
 		}
 		
 		//内容
+        /*
 		pattern = Pattern.compile(
-			"(<div class=\"content\">.+?</div>)\\s+<div style=\"text-align:center;margin:0 0 15px 0\">", 
+			"(<div class=\"content\".+?</div>)\\s+<div style=\"text-align:center;margin:0 0 15px 0\">", 
 				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(responseStr);
 		if (matcher.find()) {
 			sb.append(matcher.group(1));
 		}
+        */
+        int startIndex = responseStr.indexOf("<div class=\"content\"");
+        sb.append(getHtmlByTag(responseStr, "div", startIndex));
 		
 		String html = sb.toString();
 		//去掉所有class属性
@@ -112,4 +116,31 @@ public class CnBetaClient extends Client {
 		
 		return html;
 	}
+    
+    private String getHtmlByTag(String str, String tag, int startIndex) {
+        String startTag = "<" + tag;
+        String endTag = "</" + tag + ">";
+        
+        int fromIndex = str.indexOf(startTag, startIndex);
+        if(fromIndex < 0) {
+            return "";
+        }
+        int endIndex = str.indexOf(">", fromIndex) + 1;
+        int mIndex = endIndex;
+        
+        while(true) {
+            endIndex = str.indexOf(endTag, endIndex);
+            if(endIndex < 0) {
+                return str.substring(fromIndex);
+            }
+            endIndex += endTag.length();
+        
+            mIndex = str.indexOf(startTag, mIndex);
+            if(mIndex < 0 || mIndex > endIndex) {
+                return str.substring(fromIndex, endIndex);
+            } else {
+                mIndex = endIndex;
+            }
+        }
+    }
 }
