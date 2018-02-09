@@ -27,19 +27,19 @@ public class CnBetaClient extends Client {
 
 	@Override
 	public String getListUrl(int pageNum) {
-		String url = "http://m.cnbeta.com/touch/default/timeline.json?page=" + pageNum;
+		String url = "https://m.cnbeta.com/touch/default/timeline.json?page=" + pageNum;
 		return url;
 	}
 
 	@Override
 	public String getContentUrl(String id) {
-		String url = "http://m.cnbeta.com/wap/view/" + id + ".htm";
+		String url = "https://m.cnbeta.com/wap/view/" + id + ".htm";
 		return url;
 	}
 
 	@Override
 	public String getShareUrl(String id) {
-		String url = "http://www.cnbeta.com/articles/" + id + ".htm";
+		String url = "https://www.cnbeta.com/articles/" + id + ".htm";
 		return url;
 	}
 
