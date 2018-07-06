@@ -39,7 +39,7 @@ public class CnBetaClient extends Client {
 
 	@Override
 	public String getShareUrl(String id) {
-		String url = "https://www.cnbeta.com/articles/" + id + ".htm";
+		String url = "https://m.cnbeta.com/view/" + id + ".htm";
 		return url;
 	}
 
