@@ -10,10 +10,12 @@
     <string name="button_previous">上一页</string>
     <string name="button_next">下一页</string>
     <string name="button_home">首页</string>
+    <string name="button_totop">回顶</string>
     <string name="button_refresh">刷新</string>
     <string name="button_settings">设置</string>
     <string name="button_about">关于</string>
     <string name="button_share">分享</string>
+    <string name="button_tobrowser">浏览器打开</string>
     <string name="button_ok">确定</string>
     <string name="button_cancel">取消</string>
     <string name="msg_loading">正在读取……</string>
@@ -21,5 +23,6 @@
     <string name="msg_connectServerFailed">连接服务器失败！</string>
     <string name="msg_againExit">再按一次返回键并退出</string>
     <string name="msg_about">关于本软件</string>
+    <string name="msg_copyText">已复制文本</string>
 
 </resources>

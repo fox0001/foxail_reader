@@ -1,9 +1,20 @@
 package org.foxail.android.reader.activity;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 
 import org.foxail.android.common.CommonUtil;
 import org.foxail.android.common.volley.HtmlRequest;
@@ -11,19 +22,8 @@ import org.foxail.android.reader.R;
 import org.foxail.android.reader.client.Client;
 import org.foxail.android.reader.model.News;
 
-import android.annotation.SuppressLint;
-import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressLint("NewApi")
 public class MainActivity extends BaseActivity {
@@ -43,14 +43,65 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         mQueue = Volley.newRequestQueue(this);
         client = clientFactory.getClient("cnbeta");
         
-        //设置ActionBar的图标可点击
-        //getActionBar().setHomeButtonEnabled(true);
-        //getActionBar().setHideOnContentScrollEnabled(true);
+        //获取Toolbar
+        toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
 
+        //Toolbar双击刷新
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            private final long delayTime = 300;
+            private long lastClickTime = 0;
+
+            @Override
+            public final void onClick(View v) {
+                long nowClickTime = System.currentTimeMillis();
+                if (nowClickTime - lastClickTime > delayTime) {
+                    lastClickTime = nowClickTime;
+                } else {
+                    // 双击事件
+                    doRefresh();
+                }
+            }
+        });
+
+        //菜单项单击事件
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.main_menu_home: {
+                        showTop();
+                        break;
+                    }
+                    case R.id.main_menu_refresh: {
+                        doRefresh();
+                        break;
+                    }
+                    case R.id.main_menu_settings: {
+                        break;
+                    }
+                    case R.id.main_menu_about: {
+                        String msg = getString(R.string.button_about);
+                        msg += "\n" + getString(R.string.app_name) + " v" + CommonUtil.getVerName(item.getActionView().getContext());
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("title", getString(R.string.button_about));
+                        bundle.putString("msg", msg);
+                        showDialog(DIALOG_ALERT_COMMON, bundle);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                return true;
+            }
+        });
+
+        //下拉刷新
         swipeRefresh = findViewById(R.id.main_swiperefresh);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -59,12 +110,14 @@ public class MainActivity extends BaseActivity {
             }
         });
 
+        //新闻列表
         mainListAdapter = new MainListAdapter(this, new ArrayList<News>());
         mainList = findViewById(R.id.main_list);
         mainList.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,
                 false));
         mainList.setAdapter(mainListAdapter);
 
+        //新闻列表滚动事件，到底时自动加载更多
         mainList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -80,6 +133,7 @@ public class MainActivity extends BaseActivity {
             }
         });
 
+        //默认加载第一页
         curPage = 1;
         doRefresh();
     }
@@ -88,38 +142,6 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-    
-    //响应菜单项单击  
-    @Override  
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.main_menu_home: {
-            showTop();
-            break;
-        }
-        case R.id.main_menu_refresh: {
-            doRefresh();
-            break;
-        }
-        case R.id.main_menu_settings: {
-            
-            break;
-        }
-        case R.id.main_menu_about: {
-            String msg = getString(R.string.button_about);
-            msg += "\n" + getString(R.string.app_name) + " v" + CommonUtil.getVerName(this);
-            
-            Bundle bundle = new Bundle();
-            bundle.putString("title", getString(R.string.button_about));
-            bundle.putString("msg", msg);
-            showDialog(DIALOG_ALERT_COMMON, bundle);
-            break;
-        }
-        default:
-            break;
-        }
         return true;
     }
     

@@ -5,23 +5,30 @@ import org.foxail.android.reader.client.ClientFactory;
 import org.foxail.android.reader.model.News;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.widget.Toast;
 
-public class BaseActivity extends Activity {
-	
+public class BaseActivity extends AppCompatActivity {
+
 	private final static String TAG = "org.foxail.android.reader.activity.BaseActivity";
 	protected final static int DIALOG_ALERT_COMMON = 0;
 	protected final static int DIALOG_PROGRESS_COMMON = 10;
 	
 	protected ProgressDialog pDialog;
 	protected ClientFactory clientFactory = ClientFactory.getInstance();
+	protected Toolbar toolbar;
 
     @Override
     protected Dialog onCreateDialog(int id, Bundle bundle) {
@@ -97,11 +104,38 @@ public class BaseActivity extends Activity {
      */
     protected void share(News news) {
 		//分享新闻
-		Intent intent=new Intent(Intent.ACTION_SEND);
+		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");
 		intent.putExtra(Intent.EXTRA_SUBJECT, R.string.button_share);
 		intent.putExtra(Intent.EXTRA_TEXT, news.getTitle() + " " + news.getShareUrl());
 		startActivity(Intent.createChooser(intent, getTitle()));
     }
+
+	/**
+	 * 用浏览器打开URL
+	 *
+	 * @param url
+	 */
+	protected void browser(String url) {
+		Uri uri = Uri.parse(url);
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		startActivity(intent);
+	}
+
+	/**
+	 * 复制文本到剪切板
+	 *
+	 * @param text
+	 */
+	protected void setClipboard(String text) {
+		//获取剪贴板管理器：
+		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+		// 创建普通字符型ClipData
+		ClipData mClipData = ClipData.newPlainText("Label", text);
+		// 将ClipData内容放到系统剪贴板里。
+		cm.setPrimaryClip(mClipData);
+
+		showToast(getString(R.string.msg_copyText));
+	}
 
 }

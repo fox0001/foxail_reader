@@ -9,9 +9,11 @@ import org.foxail.android.reader.model.News;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebView;
 
 import com.android.volley.RequestQueue;
@@ -24,7 +26,8 @@ import android.content.res.*;
 public class NewsActivity extends BaseActivity {
 	
 	private final static String TAG = "NewsActivity";
-	
+
+	private Toolbar toolbar;
 	private News news;
 	private WebView newsWeb;
 	private RequestQueue mQueue;
@@ -36,31 +39,68 @@ public class NewsActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_news);
-		
+
 		mQueue = Volley.newRequestQueue(this);
 		client = clientFactory.getClient("cnbeta");
-		
-		//设置ActionBar图标可以点击
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		
+
+		//获取Toolbar
+		toolbar = findViewById(R.id.main_toolbar);
+		setSupportActionBar(toolbar);
+		toolbar.setNavigationIcon(getDrawable(R.drawable.ic_back));
+		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+			@Override
+			public final void onClick(View v) {
+				finish();
+			}
+		});
+
+		//Toolbar点击刷新
+		toolbar.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public final void onClick(View v) {
+				//单击复制标题和URL
+				setClipboard(news.getTitle() + " " + news.getShareUrl());
+			}
+		});
+
+		//菜单项单击事件
+		toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+		    @Override
+			public boolean onMenuItemClick(MenuItem item) {
+				switch (item.getItemId()) {
+					case R.id.news_menu_share: {
+						share(news);
+						break;
+					}
+					case R.id.news_menu_refresh: {
+						//刷新新闻内容
+						showNewsContent(news);
+						break;
+					}
+					case R.id.news_menu_tobrowser: {
+						//用浏览器打开
+						browser(news.getShareUrl());
+						break;
+					}
+					default:
+						break;
+				}
+				return true;
+			}
+	    });
+
+		//新闻内容WebView
 		newsWeb = (WebView) findViewById(R.id.news_web);
-		//支持缩放功能
-		newsWeb.getSettings().setSupportZoom(true);
+		newsWeb.getSettings().setSupportZoom(true); //支持缩放功能
 		newsWeb.getSettings().setBuiltInZoomControls(true);
 		newsWeb.getSettings().setDisplayZoomControls(false);
-		
-		//Setting default background color
-		int colorPprimaryDark = getResources().getColor(R.color.background);
-		newsWeb.setBackgroundColor(colorPprimaryDark);
-		
-		newsWeb.setLeft(5);
-		newsWeb.setRight(5);
+		newsWeb.setBackgroundColor(getColor(R.color.background));
 		
 		Intent intent = getIntent();
 		Bundle newsBundle = intent.getExtras();
 		news = (News) newsBundle.get("news");
-		
-		setTitle(news.getTitle());
+
+		toolbar.setTitle(news.getTitle());
 		showNewsContent(news);
 	}
 
@@ -70,37 +110,13 @@ public class NewsActivity extends BaseActivity {
 		getMenuInflater().inflate(R.menu.news, menu);
 		return true;
 	}
-    
-    //响应菜单项单击 
-	@Override  
-    public boolean onOptionsItemSelected(MenuItem item) {
-    	switch (item.getItemId()) {
-    		case android.R.id.home: {
-	    		finish();
-    			break;
-    		}
-	    	case R.id.news_menu_share: {
-	    		share(news);
-	    		break;
-	    	}
-	    	case R.id.news_menu_refresh: {
-	    		//刷新新闻内容
-	    		showNewsContent(news);
-	    		break;
-	    	}
-	    	default:
-	    		break;
-		}
-	    return true;
-    }
 	
 	// Get default CSS
 	private String getDefaultCss(){
 		if(defaultCss == null){
-			int fontColor = getResources().getColor(R.color.accent);
-			defaultCss = "<style>* {color:" 
-				+ String.format("#%06X", 0xFFFFFF & fontColor)
-				+ ";}</style>";
+			String bgColor = String.format("#%06X", 0xFFFFFF & getColor(R.color.background));
+			String fontColor = String.format("#%06X", 0xFFFFFF & getColor(R.color.accent));
+			defaultCss = String.format("<style>body{background-color:%s}\n* {color:%s;}</style>", bgColor, fontColor);
 		}
 		return defaultCss;
 	}

@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/news_linear"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:layout_alignParentTop="true"
-	android:orientation="vertical" 
-    tools:context=".activity.NewsActivity" >
+	android:orientation="vertical"
+	tools:context=".activity.NewsActivity">
+
+	<android.support.v7.widget.Toolbar
+		android:id="@+id/main_toolbar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:background="@color/primary"
+		android:elevation="@dimen/app_bar_elevation"
+		app:title="@string/app_name" />
 
 	<WebView
 		android:id="@+id/news_web"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent" />
+		android:layout_height="match_parent"
+		android:background="@color/background"
+		android:layout_margin="@dimen/news_webview_margin" />
     
 </LinearLayout>

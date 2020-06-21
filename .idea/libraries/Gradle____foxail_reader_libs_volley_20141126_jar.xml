@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./foxail_reader/libs/volley-20141126.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/foxail_reader/libs/volley-20141126.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
