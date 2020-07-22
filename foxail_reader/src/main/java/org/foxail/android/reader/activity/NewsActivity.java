@@ -1,9 +1,9 @@
 package org.foxail.android.reader.activity;
 
-import org.foxail.android.common.volley.HtmlRequest;
 import org.foxail.android.reader.BuildConfig;
 import org.foxail.android.reader.R;
 import org.foxail.android.reader.client.Client;
+import org.foxail.android.reader.client.GetNewsContent;
 import org.foxail.android.reader.model.News;
 
 import android.annotation.SuppressLint;
@@ -16,12 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
-import android.content.res.*;
-
 @SuppressLint("NewApi")
 public class NewsActivity extends BaseActivity {
 	
@@ -30,7 +24,6 @@ public class NewsActivity extends BaseActivity {
 	private Toolbar toolbar;
 	private News news;
 	private WebView newsWeb;
-	private RequestQueue mQueue;
 	private Client client;
 	
 	private String defaultCss;
@@ -40,7 +33,6 @@ public class NewsActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_news);
 
-		mQueue = Volley.newRequestQueue(this);
 		client = clientFactory.getClient("cnbeta");
 
 		//获取Toolbar
@@ -129,34 +121,36 @@ public class NewsActivity extends BaseActivity {
 		Bundle bundle = new Bundle();
 		bundle.putString("msg", getString(R.string.msg_loading));
 		showDialog(DIALOG_PROGRESS_COMMON, bundle);
-		
-		try {
-			//html = client.getNewsContent(news.getId());
-			HtmlRequest request = new HtmlRequest(client.getContentUrl(news.getId()),  
-	            new Response.Listener<String>() {  
-	                @Override  
-	                public void onResponse(String response) {  
-	                    //Log.d("TAG", response);
-	            		
-						String html = getDefaultCss() + client.getNewsContent(response);
-						
-	        			//显示处理后的新闻内容
-	        			newsWeb.loadDataWithBaseURL("about:blank", 
-	        					html, "text/html", "utf-8", null);
-	        			closePDialog();
-	                }
-	            }, new Response.ErrorListener() {  
-	                @Override  
-	                public void onErrorResponse(VolleyError error) {  
-	                    //Log.e("TAG", error.getMessage(), error);  
-	                }
-	            });
-			mQueue.add(request);
-		} catch(Exception e) {
-			closePDialog();
-			showToast(getString(R.string.msg_connectServerFailed));
-			return;
-		}
+
+		client.getNewsContent(news.getId(), new GetNewsContent() {
+			@Override
+			public void onSuccess(String newsContent) {
+				//Log.d("TAG", newsContent);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						String html = getDefaultCss() + newsContent;
+
+						//显示处理后的新闻内容
+						newsWeb.loadDataWithBaseURL("about:blank",
+								html, "text/html", "utf-8", null);
+						closePDialog();
+					}
+				});
+			}
+
+			@Override
+			public void onFailure(int errCode, Exception e) {
+				//Log.e("TAG", e.getMessage(), e);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						closePDialog();
+						showToast(getString(R.string.msg_connectServerFailed));
+					}
+				});
+			}
+		});
 	}
 
 }

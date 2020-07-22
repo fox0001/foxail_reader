@@ -1,14 +1,22 @@
 package org.foxail.android.reader.client;
 
+import org.foxail.android.common.http.HttpUtil;
 import org.foxail.android.reader.model.News;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class CnBetaClient extends Client {
 
@@ -28,12 +36,57 @@ public class CnBetaClient extends Client {
 	}
 
 	@Override
-	public List<News> getNewsList(String responseStr) {
+	public void getNewsList(int pageNum, GetNewsList getNewsList) {
+		String urlStr = getListUrl(pageNum);
+		HttpUtil.get(urlStr, new Callback() {
+			@Override
+			public void onFailure(@NotNull Call call, @NotNull IOException e) {
+				getNewsList.onFailure(0, e);
+			}
+
+			@Override
+			public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+				int responeCode = response.code();
+				if(responeCode != HttpURLConnection.HTTP_OK) {
+					getNewsList.onFailure(responeCode, null);
+				} else {
+					String responseStr = response.body().string();
+					List<News> newsList = getNewsList(responseStr);
+					getNewsList.onSuccess(newsList);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void getNewsContent(String id, GetNewsContent getNewsContent) {
+		String urlStr = getContentUrl(id);
+		HttpUtil.get(urlStr, new Callback() {
+			@Override
+			public void onFailure(@NotNull Call call, @NotNull IOException e) {
+				getNewsContent.onFailure(0, e);
+			}
+
+			@Override
+			public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+				int responeCode = response.code();
+				if(responeCode != HttpURLConnection.HTTP_OK) {
+					getNewsContent.onFailure(responeCode, null);
+				} else {
+					String responseStr = response.body().string();
+					String newsContent = getNewsContent(responseStr);
+					getNewsContent.onSuccess(newsContent);
+				}
+			}
+		});
+	}
+
+	private List<News> getNewsList(String responseStr) {
 		List<News> newsList = new ArrayList<News>();
 		if(responseStr == null || responseStr.isEmpty()) {
 			return newsList;
 		}
-		
+
 		try{
 			JSONObject json = new JSONObject(responseStr);
 			JSONArray list = json.getJSONObject("result").getJSONArray("list");
@@ -52,23 +105,22 @@ public class CnBetaClient extends Client {
 		} catch(Exception e){
 			// do nothiong
 		}
-		
+
 		return newsList;
 	}
 
-	@Override
-	public String getNewsContent(String responseStr) {
+	private String getNewsContent(String responseStr) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		//标题
 		Pattern pattern = Pattern.compile(
-				"<div class=\"title\"><b>.+?</b></div>", 
+				"<div class=\"title\"><b>.+?</b></div>",
 				Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(responseStr);
 		if (matcher.find()) {
 			sb.append(matcher.group(0));
 		}
-		
+
 		//时间
 		pattern = Pattern.compile(
 				"<div class=\"time\">.+?</div>",
@@ -77,7 +129,7 @@ public class CnBetaClient extends Client {
 		if (matcher.find()) {
 			sb.append(matcher.group(0));
 		}
-		
+
 		//内容
 		pattern = Pattern.compile("<div [^>]*class=\"content\"[^>]*>",
 				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
@@ -86,15 +138,15 @@ public class CnBetaClient extends Client {
 		if(matcher.find()) {
 			startIndex = matcher.start();
 		}
-        sb.append(getHtmlByTag(responseStr, "div", startIndex));
-		
+		sb.append(getHtmlByTag(responseStr, "div", startIndex));
+
 		String html = sb.toString();
 		//去掉所有class属性
 		//html = html.replaceAll("(?s)class=[\"'].+?[\"']", "");
 		//图片设置自动宽度
-		html = html.replaceAll("(?s)(?u)<img.+?src=[\"'](.+?)[\"'].+?>", 
+		html = html.replaceAll("(?s)(?u)<img.+?src=[\"'](.+?)[\"'].+?>",
 				"<img width='100%' src='$1'>");
-		
+
 		return html;
 	}
     

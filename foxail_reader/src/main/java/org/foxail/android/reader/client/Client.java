@@ -12,7 +12,7 @@ public abstract class Client {
 
 	abstract public String getShareUrl(String id);
 	
-	abstract public List<News> getNewsList(String responseStr);
+	abstract public void getNewsList(int pageNum, GetNewsList getNewsList);
 	
-	abstract public String getNewsContent(String responseStr);
+	abstract public void getNewsContent(String id, GetNewsContent getNewsContent);
 }

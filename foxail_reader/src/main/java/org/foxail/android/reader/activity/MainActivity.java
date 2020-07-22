@@ -11,15 +11,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
-
 import org.foxail.android.common.CommonUtil;
-import org.foxail.android.common.volley.HtmlRequest;
 import org.foxail.android.reader.R;
 import org.foxail.android.reader.client.Client;
+import org.foxail.android.reader.client.GetNewsList;
 import org.foxail.android.reader.model.News;
 
 import java.util.ArrayList;
@@ -36,7 +31,6 @@ public class MainActivity extends BaseActivity {
     private RecyclerView mainList;
     private MainListAdapter mainListAdapter;
     private long returnKeyPressed = 0;
-    private RequestQueue mQueue;
     private Client client;
     
     @Override
@@ -44,7 +38,6 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mQueue = Volley.newRequestQueue(this);
         client = clientFactory.getClient("cnbeta");
         
         //获取Toolbar
@@ -219,35 +212,31 @@ public class MainActivity extends BaseActivity {
             //mainList.removeAllViewsInLayout();
             mainListAdapter.clearItems();
         }
-        
-        try {
-            //newsList = client.getNewsList(curPage);
-            HtmlRequest htmlRequest = new HtmlRequest(client.getListUrl(curPage),
-                new Response.Listener<String>() {
+
+        client.getNewsList(curPage, new GetNewsList() {
+            @Override
+            public void onSuccess(List<News> newsList) {
+                //Log.d("TAG", response);
+                //showToast("newsList: "+newsList.size());
+                runOnUiThread(new Runnable() {
                     @Override
-                    public void onResponse(String response) {
-                        //Log.d("TAG", response);
-                        
-                        List<News> newsList = client.getNewsList(response);
-                        //showToast("newsList: "+newsList.size());
-
+                    public void run() {
                         mainListAdapter.addItems(newsList);
-
-                        swipeRefresh.setRefreshing(false);
-                    }
-                },
-                new Response.ErrorListener() {  
-                    @Override  
-                    public void onErrorResponse(VolleyError error) {  
-                        //Log.e("TAG", error.getMessage(), error);
-
                         swipeRefresh.setRefreshing(false);
                     }
                 });
-            mQueue.add(htmlRequest);
-        } catch(Exception e) {
-            swipeRefresh.setRefreshing(false);
-            showToast(getString(R.string.msg_connectServerFailed));
-        }
+            }
+
+            @Override
+            public void onFailure(int errCode, Exception e) {
+                //Log.e("TAG", e.getMessage(), e);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeRefresh.setRefreshing(false);
+                    }
+                });
+            }
+        });
     }
 }
