@@ -1,12 +1,5 @@
 package org.foxail.android.reader.activity;
 
-import org.foxail.android.reader.BuildConfig;
-import org.foxail.android.reader.R;
-import org.foxail.android.reader.client.Client;
-import org.foxail.android.reader.client.GetNewsContent;
-import org.foxail.android.reader.model.News;
-
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -16,7 +9,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 
-@SuppressLint("NewApi")
+import org.foxail.android.reader.BuildConfig;
+import org.foxail.android.reader.R;
+import org.foxail.android.reader.client.Client;
+import org.foxail.android.reader.client.GetNewsContent;
+import org.foxail.android.reader.model.News;
+
 public class NewsActivity extends BaseActivity {
 	
 	private final static String TAG = "NewsActivity";

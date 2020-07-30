@@ -1,1 +1,20 @@
-[{"outputType":{"type":"APK"},"apkInfo":{"type":"MAIN","splits":[],"versionCode":3,"versionName":"2.0","enabled":true,"outputFile":"foxail_reader-release.apk","fullName":"release","baseName":"release"},"path":"foxail_reader-release.apk","properties":{}}]
+{
+  "version": 1,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "org.foxail.android.reader",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "properties": [],
+      "versionCode": 3,
+      "versionName": "3",
+      "enabled": true,
+      "outputFile": "foxail_reader-release.apk"
+    }
+  ]
+}

@@ -20,7 +20,6 @@ import org.foxail.android.reader.model.News;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressLint("NewApi")
 public class MainActivity extends BaseActivity {
     
     private final static String TAG = "MainActivity";
