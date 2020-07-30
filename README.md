@@ -1,4 +1,6 @@
 foxail_reader
 =============
 
-a News Reader for Android
+A News Reader for Android.
+
+Just for learning.
