@@ -140,6 +140,11 @@ public class CnBetaClient extends Client {
 		}
 		sb.append(getHtmlByTag(responseStr, "div", startIndex));
 
+		//屏蔽广告
+		//<div class="article-global">...</div>
+		//<div class="article-topic">...</div>
+		sb.append("<style type=\"text/css\">\n.article-global{display:none;}\n.article-topic{display:none;}\n</style>");
+
 		String html = sb.toString();
 		//去掉所有class属性
 		//html = html.replaceAll("(?s)class=[\"'].+?[\"']", "");
@@ -149,31 +154,39 @@ public class CnBetaClient extends Client {
 
 		return html;
 	}
-    
-    private String getHtmlByTag(String str, String tag, int startIndex) {
-        String startTag = "<" + tag;
-        String endTag = "</" + tag + ">";
-        
-        int fromIndex = str.indexOf(startTag, startIndex);
-        if(fromIndex < 0) {
-            return "";
-        }
-        int endIndex = str.indexOf(">", fromIndex) + 1;
-        int mIndex = endIndex;
-        
-        while(true) {
-            endIndex = str.indexOf(endTag, endIndex);
-            if(endIndex < 0) {
-                return str.substring(fromIndex);
-            }
-            endIndex += endTag.length();
-        
-            mIndex = str.indexOf(startTag, mIndex);
-            if(mIndex < 0 || mIndex > endIndex) {
-                return str.substring(fromIndex, endIndex);
-            } else {
-                mIndex = endIndex;
-            }
-        }
-    }
+
+	private String getHtmlByTag(String str, String tag, int beginIndex) {
+		int endIndex = getEndIndexOfTag(str, tag, beginIndex);
+		return str.substring(beginIndex, endIndex);
+	}
+
+	private int getEndIndexOfTag(String str, String tag, int beginIndex) {
+		String beginTag = "<" + tag;
+		String endTag = "</" + tag + ">";
+
+		int endIndex = beginIndex;
+		int bIndex = beginIndex;
+		int eIndex = bIndex;
+		int tagCount = 1;
+
+		while(tagCount > 0) {
+			eIndex = str.indexOf(endTag, endIndex);
+			if(eIndex < 0) {
+				break;
+			}
+			tagCount--;
+			endIndex = eIndex + endTag.length();
+
+			while(true) {
+				bIndex = str.indexOf(">", bIndex) + 1;
+				bIndex = str.indexOf(beginTag, bIndex);
+				if(bIndex < 0 || bIndex > endIndex) {
+					break;
+				}
+				tagCount++;
+			}
+			bIndex = endIndex;
+		}
+		return endIndex;
+	}
 }

@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import org.foxail.android.reader.BuildConfig;
@@ -81,6 +82,7 @@ public class NewsActivity extends BaseActivity {
 
 		//新闻内容WebView
 		newsWeb = (WebView) findViewById(R.id.news_web);
+		newsWeb.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE); // no cache
 		newsWeb.getSettings().setSupportZoom(true); //支持缩放功能
 		newsWeb.getSettings().setBuiltInZoomControls(true);
 		newsWeb.getSettings().setDisplayZoomControls(false);

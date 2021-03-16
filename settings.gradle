@@ -1,1 +1,2 @@
 include ':foxail_reader'
+rootProject.name = "foxail_reader"

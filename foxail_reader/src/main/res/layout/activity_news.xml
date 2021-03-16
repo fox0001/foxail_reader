@@ -22,6 +22,9 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:background="@color/background"
-		android:layout_margin="@dimen/news_webview_margin" />
+		android:paddingTop="@dimen/news_webview_margin"
+		android:paddingRight="@dimen/news_webview_margin"
+		android:paddingBottom="@dimen/news_webview_margin"
+		android:paddingLeft="@dimen/news_webview_margin" />
     
 </LinearLayout>
