@@ -82,12 +82,18 @@ public class NewsActivity extends BaseActivity {
 
 		//新闻内容WebView
 		newsWeb = (WebView) findViewById(R.id.news_web);
-		newsWeb.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE); // no cache
-		newsWeb.getSettings().setSupportZoom(true); //支持缩放功能
-		newsWeb.getSettings().setBuiltInZoomControls(true);
-		newsWeb.getSettings().setDisplayZoomControls(false);
+		newsWeb.clearHistory();
+		newsWeb.clearFormData();
+		newsWeb.clearCache(true);
 		newsWeb.setBackgroundColor(getColor(R.color.background));
-		
+
+		WebSettings wvSettings = newsWeb.getSettings();
+		wvSettings.setCacheMode(WebSettings.LOAD_NO_CACHE); // no cache
+		//wvSettings.setJavaScriptEnabled(true);
+		wvSettings.setSupportZoom(true); //支持缩放功能
+		wvSettings.setBuiltInZoomControls(true);
+		wvSettings.setDisplayZoomControls(false);
+
 		Intent intent = getIntent();
 		Bundle newsBundle = intent.getExtras();
 		news = (News) newsBundle.get("news");
