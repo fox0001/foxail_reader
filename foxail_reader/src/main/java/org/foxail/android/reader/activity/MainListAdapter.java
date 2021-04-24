@@ -2,12 +2,13 @@ package org.foxail.android.reader.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.foxail.android.reader.R;
 import org.foxail.android.reader.model.News;
@@ -27,8 +28,7 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.MainLi
     public MainListItemHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View inflate = LayoutInflater.from(context).inflate(R.layout.mainlist_item,
                 parent, false);
-        MainListAdapter.MainListItemHolder holder = new MainListAdapter.MainListItemHolder(inflate);
-        return holder;
+        return new MainListAdapter.MainListItemHolder(inflate);
     }
 
     @Override

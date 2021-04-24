@@ -4,7 +4,6 @@ import org.foxail.android.reader.R;
 import org.foxail.android.reader.client.ClientFactory;
 import org.foxail.android.reader.model.News;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
@@ -14,67 +13,77 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public class BaseActivity extends AppCompatActivity {
 
 	private final static String TAG = "org.foxail.android.reader.activity.BaseActivity";
 	protected final static int DIALOG_ALERT_COMMON = 0;
 	protected final static int DIALOG_PROGRESS_COMMON = 10;
-	
-	protected ProgressDialog pDialog;
+
+	protected AlertDialog alertDialog;
+	protected AlertDialog progressDialog;
 	protected ClientFactory clientFactory = ClientFactory.getInstance();
 	protected Toolbar toolbar;
 
-    @Override
-    protected Dialog onCreateDialog(int id, Bundle bundle) {
-    	String title = null;
-    	String msg = null;
-    	if (bundle != null) {
-    		title = bundle.getString("title");
-    		msg = bundle.getString("msg");
-    	}
-    	if (isEmpty(title)) title = getString(R.string.title_notice);
-    	
-    	switch (id) {
-    	case DIALOG_ALERT_COMMON: 
-    		return new AlertDialog.Builder(BaseActivity.this)
-            //.setIconAttribute(android.R.attr.alertDialogIcon)
-            .setTitle(title)
-            .setMessage(msg)
-            .setPositiveButton(getString(R.string.button_ok), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-					dialog.dismiss();
-					removeDialog(DIALOG_ALERT_COMMON);
-                }
-            })
-            .create();
-    		
-    	case DIALOG_PROGRESS_COMMON:
-            pDialog = new ProgressDialog(BaseActivity.this);
-            //pDialog.setIconAttribute(android.R.attr.alertDialogIcon);
-            pDialog.setTitle(title);
-            pDialog.setMessage(msg);
-            pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            return pDialog;
-            
-    	default:
-        	return null;
-    	}
-    }
-    
-    /**
-     * 关闭进度框
-     */
-    protected void closePDialog() {
-		if (pDialog.isShowing()) {
-			pDialog.dismiss();
+	/**
+	 * 弹出对话框
+	 *
+	 * @param id
+	 * @param bundle
+	 */
+	protected void popupDialog(int id, Bundle bundle) {
+		String title = null;
+		String msg = null;
+		if (bundle != null) {
+			title = bundle.getString("title");
+			msg = bundle.getString("msg");
 		}
-    }
+		if (isEmpty(title)) title = getString(R.string.title_notice);
+
+		switch (id) {
+			case DIALOG_ALERT_COMMON:
+				if(alertDialog == null) {
+					alertDialog = new AlertDialog.Builder(BaseActivity.this)
+							.setPositiveButton(getString(R.string.button_ok), new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									// do nothing
+								}
+							})
+							.create();
+				}
+				alertDialog.setTitle(title);
+				alertDialog.setMessage(msg);
+				alertDialog.show();
+				break;
+			case DIALOG_PROGRESS_COMMON:
+				if(progressDialog == null) {
+					progressDialog = new AlertDialog.Builder(BaseActivity.this)
+							.create();
+				}
+				progressDialog.setTitle(title);
+				progressDialog.setMessage(msg);
+				progressDialog.show();
+				break;
+			default:
+				// do nothing
+				break;
+		}
+	}
+
+	/**
+	 * 关闭进度对话框
+	 */
+	protected void closePDialog() {
+		if (progressDialog.isShowing()) {
+			progressDialog.dismiss();
+		}
+	}
 	
 	/**
 	 * 显示提示信息

@@ -20,6 +20,7 @@
         android:id="@+id/main_menu_about"
         android:orderInCategory="4"
         android:title="@string/button_about"
-        app:showAsAction="ifRoom|withText" />
+        app:showAsAction="ifRoom|withText"
+        app:actionLayout="@layout/activity_main" />
 
 </menu>

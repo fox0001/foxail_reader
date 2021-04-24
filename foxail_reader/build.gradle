@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion '29.0.2'
+    compileSdkVersion 30  /* Android 10 */
+    buildToolsVersion '30.0.2'
 
     defaultConfig {
         applicationId "org.foxail.android.reader"
-        minSdkVersion 23
-        targetSdkVersion 28
+        minSdkVersion 23 /* Android 6 */
+        targetSdkVersion 30  /* Android 10 */
     }
 
     buildTypes {
@@ -15,6 +15,7 @@ android {
             //shrinkResources true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            multiDexEnabled false
         }
     }
     compileOptions {
@@ -24,7 +25,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.squareup.okhttp3:okhttp:4.8.0'
+    implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
 }

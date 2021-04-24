@@ -1,24 +1,40 @@
 package org.foxail.android.reader.activity;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.graphics.drawable.DrawerArrowDrawable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.foxail.android.common.CommonUtil;
+import org.foxail.android.common.SettingsUtil;
 import org.foxail.android.reader.R;
 import org.foxail.android.reader.client.Client;
+import org.foxail.android.reader.client.ClientSource;
 import org.foxail.android.reader.client.GetNewsList;
+import org.foxail.android.reader.model.ClientItem;
 import org.foxail.android.reader.model.News;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends BaseActivity {
     
@@ -26,6 +42,8 @@ public class MainActivity extends BaseActivity {
     protected final static int DIALOG_ALERT_EXIT = 1;
     
     private int curPage = 0;
+    private DrawerLayout mainDrawer;
+    private ListView leftitemList;
     private SwipeRefreshLayout swipeRefresh;
     private RecyclerView mainList;
     private MainListAdapter mainListAdapter;
@@ -37,20 +55,88 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        client = clientFactory.getClient("cnbeta");
+        client = clientFactory.getClient(SettingsUtil.getCurClient(getApplicationContext()));
         
-        //获取Toolbar
+        // Toolbar
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        //Toolbar双击刷新
+        mainDrawer = findViewById(R.id.main_drawer);
+        ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this, mainDrawer,
+                R.string.app_name, R.string.app_name);
+        mainDrawer.addDrawerListener(mDrawerToggle);
+        //mDrawerToggle.setDrawerIndicatorEnabled(true);
+        mDrawerToggle.syncState();
+
+        // Left menu. Show client list
+        leftitemList = findViewById(R.id.leftitem_list);
+        List<ClientItem> clientItems = new ArrayList<>();
+        for(ClientSource clientSource : ClientSource.values()) {
+            String name = null;
+            switch(clientSource) {
+                case cnbeta:
+                    name = getString(R.string.client_cnbeta);
+                    break;
+                case oschina:
+                    name = getString(R.string.client_oschina);
+                    break;
+            }
+            ClientItem clientItem = new ClientItem(clientSource, name);
+            clientItems.add(clientItem);
+        }
+        BaseAdapter itemListAdapter = new BaseAdapter(){
+            @Override
+            public int getCount() {
+                return clientItems.size();
+            }
+
+            @Override
+            public ClientItem getItem(int position) {
+                return clientItems.get(position);
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return position;
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                ClientItem clientItem = getItem(position);
+                if(convertView == null) {
+                    convertView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.clientlist_item, null, false);
+                }
+                TextView textView = convertView.findViewById(R.id.client_name);
+                textView.setText(clientItem.getName());
+                textView.setTag(clientItem.getClientSource());
+                return convertView;
+            }
+        };
+        leftitemList.setAdapter(itemListAdapter);
+
+        leftitemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView textView = (TextView) view.findViewById(R.id.client_name);
+                ClientSource clientSource = (ClientSource) textView.getTag();
+                SettingsUtil.setCurClient(getApplicationContext(), clientSource);
+                client = clientFactory.getClient(clientSource);
+                mainDrawer.close();
+                doRefresh();
+            }
+        });
+
+        // Toolbar. Double click event: refresh
         toolbar.setOnClickListener(new View.OnClickListener() {
             private final long delayTime = 300;
             private long lastClickTime = 0;
+            private long nowClickTime = 0;
 
             @Override
             public final void onClick(View v) {
-                long nowClickTime = System.currentTimeMillis();
+                nowClickTime = System.currentTimeMillis();
                 if (nowClickTime - lastClickTime > delayTime) {
                     lastClickTime = nowClickTime;
                 } else {
@@ -60,7 +146,7 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        //菜单项单击事件
+        // Menu items. Click event
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -77,16 +163,16 @@ public class MainActivity extends BaseActivity {
                         break;
                     }
                     case R.id.main_menu_about: {
-                        String msg = getString(R.string.button_about);
-                        msg += "\n" + getString(R.string.app_name) + " v" + CommonUtil.getVerName(item.getActionView().getContext());
+                        String msg = getString(R.string.app_name) + " v" + CommonUtil.getVerName(item.getActionView().getContext());
 
                         Bundle bundle = new Bundle();
                         bundle.putString("title", getString(R.string.button_about));
                         bundle.putString("msg", msg);
-                        showDialog(DIALOG_ALERT_COMMON, bundle);
+                        popupDialog(DIALOG_ALERT_COMMON, bundle);
                         break;
                     }
                     default:
+                        // do nothing
                         break;
                 }
                 return true;
@@ -129,7 +215,19 @@ public class MainActivity extends BaseActivity {
         curPage = 1;
         doRefresh();
     }
-    
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(mainDrawer.isOpen()) {
+            // close drawer
+            mainDrawer.close();
+        } else {
+            // open drawer
+            mainDrawer.open();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

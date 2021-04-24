@@ -24,5 +24,7 @@
     <string name="msg_againExit">Press BACK again and EXIT</string>
     <string name="msg_about">About this app</string>
     <string name="msg_copyText">Text has been copied</string>
+    <string name="client_cnbeta">cnBeta</string>
+    <string name="client_oschina">OSCHINA</string>
 
 </resources>

@@ -2,7 +2,6 @@ package org.foxail.android.reader.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,6 +9,10 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
+
+import org.foxail.android.common.SettingsUtil;
 import org.foxail.android.reader.BuildConfig;
 import org.foxail.android.reader.R;
 import org.foxail.android.reader.client.Client;
@@ -32,10 +35,10 @@ public class NewsActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_news);
 
-		client = clientFactory.getClient("cnbeta");
+		client = clientFactory.getClient(SettingsUtil.getCurClient(getApplicationContext()));
 
 		//获取Toolbar
-		toolbar = findViewById(R.id.main_toolbar);
+		toolbar = findViewById(R.id.news_toolbar);
 		setSupportActionBar(toolbar);
 		toolbar.setNavigationIcon(getDrawable(R.drawable.ic_back));
 		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -79,6 +82,10 @@ public class NewsActivity extends BaseActivity {
 				return true;
 			}
 	    });
+
+		//显示系统的返回按钮
+		//ActionBar ab = getSupportActionBar();
+		//ab.setDisplayHomeAsUpEnabled(true);
 
 		//新闻内容WebView
 		newsWeb = (WebView) findViewById(R.id.news_web);
@@ -126,9 +133,9 @@ public class NewsActivity extends BaseActivity {
 		
 		Bundle bundle = new Bundle();
 		bundle.putString("msg", getString(R.string.msg_loading));
-		showDialog(DIALOG_PROGRESS_COMMON, bundle);
+		popupDialog(DIALOG_PROGRESS_COMMON, bundle);
 
-		client.getNewsContent(news.getId(), new GetNewsContent() {
+		client.getNewsContent(news.getContentUrl(), new GetNewsContent() {
 			@Override
 			public void onSuccess(String newsContent) {
 				//Log.d("TAG", newsContent);

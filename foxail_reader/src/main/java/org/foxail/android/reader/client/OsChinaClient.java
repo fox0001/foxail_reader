@@ -18,19 +18,11 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class CnBetaClient extends Client {
-
-	private String getContentUrl(String id) {
-		return String.format("https://m.cnbeta.com/wap/view/%1$s.htm", id);
-	}
-
-	private String getShareUrl(String id) {
-		return String.format("https://m.cnbeta.com/view/%1$s.htm", id);
-	}
+public class OsChinaClient extends Client {
 
 	@Override
 	public String getListUrl(int pageNum) {
-		return String.format("https://m.cnbeta.com/touch/default/timeline.json?page=%1$s", pageNum);
+		return String.format("https://www.oschina.net/news/widgets/_news_index_all_list?p=%1$s&type=ajax", pageNum);
 	}
 
 	@Override
@@ -84,23 +76,19 @@ public class CnBetaClient extends Client {
 			return newsList;
 		}
 
-		try{
-			JSONObject json = new JSONObject(responseStr);
-			JSONArray list = json.getJSONObject("result").getJSONArray("list");
-			JSONObject item = null;
-			News news = null;
-			for(int i = 0; i < list.length(); i++){
-				item = list.getJSONObject(i);
-				news = new News();
-				news.setId(item.getString("sid"));
-				news.setTitle(item.getString("title"));
-				news.setContentUrl(this.getContentUrl(news.getId()));
-				news.setShareUrl(this.getShareUrl(news.getId()));
-				news.setReceiveDate(new Date(System.currentTimeMillis()));
-				newsList.add(news);
-			}
-		} catch(Exception e){
-			// do nothiong
+		Pattern titlePattern = Pattern.compile(
+				"<h3 class=\"header\"><a href=\"(https://.+?)\" [^>]*>(.+?)</a></h3>",
+				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		Matcher matcher = titlePattern.matcher(responseStr);
+		while (matcher.find()) {
+			String url = matcher.group(1);
+			String title = matcher.group(2);
+
+			News news = new News();
+			news.setTitle(title);
+			news.setContentUrl(url);
+			news.setShareUrl(url);
+			newsList.add(news);
 		}
 
 		return newsList;
@@ -111,7 +99,7 @@ public class CnBetaClient extends Client {
 
 		//标题
 		Pattern pattern = Pattern.compile(
-				"<div class=\"title\"><b>.+?</b></div>",
+				"<h1 class=\"article\\-box__title\"><a [^>]*>.+?</a></h1>",
 				Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(responseStr);
 		if (matcher.find()) {
@@ -120,7 +108,7 @@ public class CnBetaClient extends Client {
 
 		//时间
 		pattern = Pattern.compile(
-				"<div class=\"time\">.+?</div>",
+				"<div class=\"article\\-box__meta\">.+?</div>",
 				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(responseStr);
 		if (matcher.find()) {
@@ -128,7 +116,7 @@ public class CnBetaClient extends Client {
 		}
 
 		//内容
-		pattern = Pattern.compile("<div [^>]*class=\"content\"[^>]*>",
+		pattern = Pattern.compile("<div [^>]*class=\"article-detail\"[^>]*>",
 				Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(responseStr);
 		int startIndex = 0;
@@ -136,11 +124,6 @@ public class CnBetaClient extends Client {
 			startIndex = matcher.start();
 		}
 		sb.append(getHtmlByTag(responseStr, "div", startIndex));
-
-		//屏蔽广告
-		//<div class="article-global">...</div>
-		//<div class="article-topic">...</div>
-		sb.append("<style type=\"text/css\">\n.article-global{display:none;}\n.article-topic{display:none;}\n</style>");
 
 		String html = sb.toString();
 		//去掉所有class属性
