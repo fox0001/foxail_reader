@@ -1,27 +1,27 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30  /* Android 10 */
-    buildToolsVersion '30.0.2'
+    compileSdkVersion 31  /* Android 12 */
 
     defaultConfig {
         applicationId "org.foxail.android.reader"
         minSdkVersion 23 /* Android 6 */
-        targetSdkVersion 30  /* Android 10 */
+        targetSdkVersion 31  /* Android 12 */
     }
 
     buildTypes {
         release {
             //shrinkResources true
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             multiDexEnabled false
         }
     }
     compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
     }
+    namespace 'org.foxail.android.reader'
 }
 
 dependencies {

@@ -13,7 +13,6 @@ public class CommonUtil {
 	 * 获取本软件的versionCode
 	 * 
 	 * @param context - application context
-	 * @return
 	 */
 	public static int getVerCode(Context context) {
         int verCode = -1;
@@ -29,7 +28,6 @@ public class CommonUtil {
 	 * 获取本软件的versionName
 	 * 
 	 * @param context - application context
-	 * @return
 	 */
     public static String getVerName(Context context) {
         String verName = "";
@@ -46,7 +44,6 @@ public class CommonUtil {
 	 *
 	 * @param variableName - application context
 	 * @param c - the Class of resource
-	 * @return
 	 */
 	public static int getResId(String variableName, Class<?> c) {
 		try {
